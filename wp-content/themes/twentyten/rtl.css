@@ -94,7 +94,7 @@ input[type=submit] {
 -------------------------------------------------------------- */
 
 /* Text elements */
-ul, ol {
+ul {
 	margin: 0 1.5em 18px 0;
 }
 blockquote {
@@ -119,9 +119,6 @@ blockquote {
 	clear: left;
 	float: left;
 	font-style: normal;
-}
-#branding img {
-	float: right;
 }
 
 /* =Menu

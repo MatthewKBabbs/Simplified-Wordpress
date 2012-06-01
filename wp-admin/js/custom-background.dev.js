@@ -4,10 +4,6 @@ function pickColor(color) {
 	farbtastic.setColor(color);
 	jQuery('#background-color').val(color);
 	jQuery('#custom-background-image').css('background-color', color);
-	if ( color && color !== '#' )
-		jQuery('#clearcolor').show();
-	else
-		jQuery('#clearcolor').hide();
 }
 
 jQuery(document).ready(function() {
@@ -16,14 +12,9 @@ jQuery(document).ready(function() {
 		return false;
 	});
 
-	jQuery('#clearcolor a').click( function(e) {
-		pickColor('');
-		e.preventDefault();
-	});
-
 	jQuery('#background-color').keyup(function() {
 		var _hex = jQuery('#background-color').val(), hex = _hex;
-		if ( hex.charAt(0) != '#' )
+		if ( hex[0] != '#' )
 			hex = '#' + hex;
 		hex = hex.replace(/[^#a-fA-F0-9]+/, '');
 		if ( hex != _hex )

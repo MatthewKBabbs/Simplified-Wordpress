@@ -7,27 +7,27 @@
  */
 
 /**
- * Add a link to using values provided in $_POST.
+ * {@internal Missing Short Description}}
  *
- * @since 2.0.0
+ * @since unknown
  *
- * @return int|WP_Error Value 0 or WP_Error on failure. The link ID on success.
+ * @return unknown
  */
 function add_link() {
 	return edit_link();
 }
 
 /**
- * Update or insert a link using values provided in $_POST.
+ * {@internal Missing Short Description}}
  *
- * @since 2.0.0
+ * @since unknown
  *
- * @param int $link_id Optional. ID of the link to edit.
- * @return int|WP_Error Value 0 or WP_Error on failure. The link ID on success.
+ * @param unknown_type $link_id
+ * @return unknown
  */
-function edit_link( $link_id = 0 ) {
-	if ( !current_user_can( 'manage_links' ) )
-		wp_die( __( 'Cheatin&#8217; uh?' ) );
+function edit_link( $link_id = '' ) {
+	if (!current_user_can( 'manage_links' ))
+		wp_die( __( 'Cheatin&#8217; uh?' ));
 
 	$_POST['link_url'] = esc_html( $_POST['link_url'] );
 	$_POST['link_url'] = esc_url($_POST['link_url']);
@@ -39,27 +39,27 @@ function edit_link( $link_id = 0 ) {
 
 	if ( !empty( $link_id ) ) {
 		$_POST['link_id'] = $link_id;
-		return wp_update_link( $_POST );
+		return wp_update_link( $_POST);
 	} else {
-		return wp_insert_link( $_POST );
+		return wp_insert_link( $_POST);
 	}
 }
 
 /**
- * Retrieve the default link for editing.
+ * {@internal Missing Short Description}}
  *
- * @since 2.0.0
+ * @since unknown
  *
- * @return object Default link
+ * @return unknown
  */
 function get_default_link_to_edit() {
 	if ( isset( $_GET['linkurl'] ) )
-		$link->link_url = esc_url( $_GET['linkurl'] );
+		$link->link_url = esc_url( $_GET['linkurl']);
 	else
 		$link->link_url = '';
 
 	if ( isset( $_GET['name'] ) )
-		$link->link_name = esc_attr( $_GET['name'] );
+		$link->link_name = esc_attr( $_GET['name']);
 	else
 		$link->link_name = '';
 
@@ -69,12 +69,12 @@ function get_default_link_to_edit() {
 }
 
 /**
- * Delete link specified from database
+ * {@internal Missing Short Description}}
  *
- * @since 2.0.0
+ * @since unknown
  *
- * @param int $link_id ID of the link to delete
- * @return bool True
+ * @param unknown_type $link_id
+ * @return unknown
  */
 function wp_delete_link( $link_id ) {
 	global $wpdb;
@@ -93,12 +93,12 @@ function wp_delete_link( $link_id ) {
 }
 
 /**
- * Retrieves the link categories associated with the link specified.
+ * {@internal Missing Short Description}}
  *
- * @since 2.1.0
+ * @since unknown
  *
- * @param int $link_id Link ID to look up
- * @return array The requested link's categories
+ * @param unknown_type $link_id
+ * @return unknown
  */
 function wp_get_link_cats( $link_id = 0 ) {
 
@@ -108,28 +108,27 @@ function wp_get_link_cats( $link_id = 0 ) {
 }
 
 /**
- * Retrieve link data based on ID.
+ * {@internal Missing Short Description}}
  *
- * @since 2.0.0
+ * @since unknown
  *
- * @param int $link_id ID of link to retrieve
- * @return object Link for editing
+ * @param unknown_type $link_id
+ * @return unknown
  */
 function get_link_to_edit( $link_id ) {
 	return get_bookmark( $link_id, OBJECT, 'edit' );
 }
 
 /**
- * This function inserts/updates links into/in the database.
+ * {@internal Missing Short Description}}
  *
- * @since 2.0.0
+ * @since unknown
  *
- * @param array $linkdata Elements that make up the link to insert.
- * @param bool $wp_error Optional. If true return WP_Error object on failure.
- * @return int|WP_Error Value 0 or WP_Error on failure. The link ID on success.
+ * @param unknown_type $linkdata
+ * @return unknown
  */
 function wp_insert_link( $linkdata, $wp_error = false ) {
-	global $wpdb;
+	global $wpdb, $current_user;
 
 	$defaults = array( 'link_id' => 0, 'link_name' => '', 'link_url' => '', 'link_rating' => 0 );
 
@@ -167,7 +166,7 @@ function wp_insert_link( $linkdata, $wp_error = false ) {
 		$link_visible = 'Y';
 
 	if ( empty( $link_owner ) )
-		$link_owner = get_current_user_id();
+		$link_owner = $current_user->id;
 
 	if ( empty( $link_notes ) )
 		$link_notes = '';
@@ -182,7 +181,7 @@ function wp_insert_link( $linkdata, $wp_error = false ) {
 		$link_rel = '';
 
 	// Make sure we set a valid category
-	if ( ! isset( $link_category ) || 0 == count( $link_category ) || !is_array( $link_category ) ) {
+	if ( ! isset( $link_category ) ||0 == count( $link_category ) || !is_array( $link_category ) ) {
 		$link_category = array( get_option( 'default_link_category' ) );
 	}
 
@@ -216,12 +215,12 @@ function wp_insert_link( $linkdata, $wp_error = false ) {
 }
 
 /**
- * Update link with the specified link categories.
+ * {@internal Missing Short Description}}
  *
- * @since 2.1.0
+ * @since unknown
  *
- * @param int $link_id ID of link to update
- * @param array $link_categories Array of categories to
+ * @param unknown_type $link_id
+ * @param unknown_type $link_categories
  */
 function wp_set_link_cats( $link_id = 0, $link_categories = array() ) {
 	// If $link_categories isn't already an array, make it one:
@@ -234,15 +233,15 @@ function wp_set_link_cats( $link_id = 0, $link_categories = array() ) {
 	wp_set_object_terms( $link_id, $link_categories, 'link_category' );
 
 	clean_bookmark_cache( $link_id );
-}
+}	// wp_set_link_cats()
 
 /**
- * Update a link in the database.
+ * {@internal Missing Short Description}}
  *
- * @since 2.0.0
+ * @since unknown
  *
- * @param array $linkdata Link data to update.
- * @return int|WP_Error Value 0 or WP_Error on failure. The updated link ID on success.
+ * @param unknown_type $linkdata
+ * @return unknown
  */
 function wp_update_link( $linkdata ) {
 	$link_id = (int) $linkdata['link_id'];

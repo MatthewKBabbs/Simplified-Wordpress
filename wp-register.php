@@ -10,6 +10,6 @@
  */
 
 require('./wp-load.php');
-wp_redirect( site_url('wp-login.php?action=register') );
-exit;
+wp_redirect('wp-login.php?action=register');
+
 ?>

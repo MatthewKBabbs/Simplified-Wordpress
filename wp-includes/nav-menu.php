@@ -79,23 +79,6 @@ function register_nav_menus( $locations = array() ) {
 }
 
 /**
- * Unregisters a navigation menu for a theme.
- *
- * @param array $location the menu location identifier
- *
- * @return bool True on success, false on failure.
- */
-function unregister_nav_menu( $location ) {
-	global $_wp_registered_nav_menus;
-
-	if ( is_array( $_wp_registered_nav_menus ) && isset( $_wp_registered_nav_menus[$location] ) ) {
-		unset( $_wp_registered_nav_menus[$location] );
-		return true;
-	}
-	return false;
-}
-
-/**
  * Register a navigation menu for a theme.
  *
  * @since 3.0.0
@@ -403,7 +386,7 @@ function wp_update_nav_menu_item( $menu_id = 0, $menu_item_db_id = 0, $menu_item
  *
  * @since 3.0.0
  *
- * @param array $args Array of arguments passed on to get_terms().
+ * @param $args array Array of arguments passed on to get_terms().
  * @return array menu objects
  */
 function wp_get_nav_menus( $args = array() ) {
@@ -440,22 +423,6 @@ function _sort_nav_menu_items( $a, $b ) {
 		return $_a < $_b ? -1 : 1;
 	else
 		return strcmp( $a->$_menu_item_sort_prop, $b->$_menu_item_sort_prop );
-}
-
-/**
- * Returns if a menu item is valid. Bug #13958
- *
- * @since 3.2.0
- * @access private
- *
- * @param object $menu_item The menu item to check
- * @return bool false if invalid, else true.
- */
-function _is_valid_nav_menu_item( $item ) {
-	if ( ! empty( $item->_invalid ) )
-		return false;
-
-	return true;
 }
 
 /**
@@ -529,9 +496,6 @@ function wp_get_nav_menu_items( $menu, $args = array() ) {
 
 	$items = array_map( 'wp_setup_nav_menu_item', $items );
 
-	if ( ! is_admin() ) // Remove invalid items only in frontend
-		$items = array_filter( $items, '_is_valid_nav_menu_item' );
-
 	if ( ARRAY_A == $args['output'] ) {
 		$GLOBALS['_menu_item_sort_prop'] = $args['output_key'];
 		usort($items, '_sort_nav_menu_items');
@@ -579,13 +543,7 @@ function wp_setup_nav_menu_item( $menu_item ) {
 
 			if ( 'post_type' == $menu_item->type ) {
 				$object = get_post_type_object( $menu_item->object );
-				if ( $object ) {
-					$menu_item->type_label = $object->labels->singular_name;
-				} else {
-					$menu_item->type_label = $menu_item->object;
-					$menu_item->_invalid = true;
-				}
-
+				$menu_item->type_label = $object->labels->singular_name;
 				$menu_item->url = get_permalink( $menu_item->object_id );
 
 				$original_object = get_post( $menu_item->object_id );
@@ -594,19 +552,11 @@ function wp_setup_nav_menu_item( $menu_item ) {
 
 			} elseif ( 'taxonomy' == $menu_item->type ) {
 				$object = get_taxonomy( $menu_item->object );
-				if ( $object ) {
-					$menu_item->type_label = $object->labels->singular_name;
-				} else {
-					$menu_item->type_label = $menu_item->object;
-					$menu_item->_invalid = true;
-				}
-
+				$menu_item->type_label = $object->labels->singular_name;
 				$term_url = get_term_link( (int) $menu_item->object_id, $menu_item->object );
 				$menu_item->url = !is_wp_error( $term_url ) ? $term_url : '';
 
 				$original_title = get_term_field( 'name', $menu_item->object_id, $menu_item->object, 'raw' );
-				if ( is_wp_error( $original_title ) )
-					$original_title = false;
 				$menu_item->title = '' == $menu_item->post_title ? $original_title : $menu_item->post_title;
 
 			} else {
@@ -618,9 +568,7 @@ function wp_setup_nav_menu_item( $menu_item ) {
 			$menu_item->target = empty( $menu_item->target ) ? get_post_meta( $menu_item->ID, '_menu_item_target', true ) : $menu_item->target;
 
 			$menu_item->attr_title = empty( $menu_item->attr_title ) ? apply_filters( 'nav_menu_attr_title', $menu_item->post_excerpt ) : $menu_item->attr_title;
-
-			if ( empty( $menu_item->description ) )
-				$menu_item->description = apply_filters( 'nav_menu_description',  wp_trim_words( $menu_item->post_content, 200 ) );
+			$menu_item->description = empty( $menu_item->description ) ? apply_filters( 'nav_menu_description', $menu_item->post_content ) : $menu_item->description;
 
 			$menu_item->classes = empty( $menu_item->classes ) ? (array) get_post_meta( $menu_item->ID, '_menu_item_classes', true ) : $menu_item->classes;
 			$menu_item->xfn = empty( $menu_item->xfn ) ? get_post_meta( $menu_item->ID, '_menu_item_xfn', true ) : $menu_item->xfn;
@@ -638,8 +586,8 @@ function wp_setup_nav_menu_item( $menu_item ) {
 			$menu_item->url = get_permalink( $menu_item->ID );
 			$menu_item->target = '';
 
-			$menu_item->attr_title = apply_filters( 'nav_menu_attr_title', '' );
-			$menu_item->description = apply_filters( 'nav_menu_description', '' );
+			$menu_item->attr_title = apply_filters( 'nav_menu_attr_title', $menu_item->post_excerpt );
+			$menu_item->description = apply_filters( 'nav_menu_description', $menu_item->post_content );
 			$menu_item->classes = array();
 			$menu_item->xfn = '';
 		}
@@ -688,7 +636,7 @@ function wp_get_associated_nav_menu_items( $object_id = 0, $object_type = 'post_
 			'meta_value' => $object_id,
 			'post_status' => 'any',
 			'post_type' => 'nav_menu_item',
-			'posts_per_page' => -1,
+			'showposts' => -1,
 		)
 	);
 	foreach( (array) $menu_items as $menu_item ) {

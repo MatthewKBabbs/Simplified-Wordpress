@@ -9,7 +9,7 @@
 /**
  * {@internal Missing Short Description}}
  *
- * @since 2.0.0
+ * @since unknown
  *
  * @return unknown
  */
@@ -21,7 +21,7 @@ function got_mod_rewrite() {
 /**
  * {@internal Missing Short Description}}
  *
- * @since 1.5.0
+ * @since unknown
  *
  * @param unknown_type $filename
  * @param unknown_type $marker
@@ -57,7 +57,7 @@ function extract_from_markers( $filename, $marker ) {
  * BEGIN and END markers. Replaces existing marked info. Retains surrounding
  * data. Creates file if none exists.
  *
- * @since 1.5.0
+ * @since unknown
  *
  * @param unknown_type $filename
  * @param unknown_type $marker
@@ -117,7 +117,7 @@ function insert_with_markers( $filename, $marker, $insertion ) {
  * Always writes to the file if it exists and is writable to ensure that we
  * blank out old rules.
  *
- * @since 1.5.0
+ * @since unknown
  */
 function save_mod_rewrite_rules() {
 	if ( is_multisite() )
@@ -149,21 +149,20 @@ function save_mod_rewrite_rules() {
  * @return bool True if web.config was updated successfully
  */
 function iis7_save_url_rewrite_rules(){
-	if ( is_multisite() )
-		return;
-
 	global $wp_rewrite;
 
 	$home_path = get_home_path();
 	$web_config_file = $home_path . 'web.config';
 
 	// Using win_is_writable() instead of is_writable() because of a bug in Windows PHP
-	if ( iis7_supports_permalinks() && ( ( ! file_exists($web_config_file) && win_is_writable($home_path) && $wp_rewrite->using_mod_rewrite_permalinks() ) || win_is_writable($web_config_file) ) ) {
-		$rule = $wp_rewrite->iis7_url_rewrite_rules(false, '', '');
-		if ( ! empty($rule) ) {
-			return iis7_add_rewrite_rule($web_config_file, $rule);
-		} else {
-			return iis7_delete_rewrite_rule($web_config_file);
+	if ( ( ! file_exists($web_config_file) && win_is_writable($home_path) && $wp_rewrite->using_mod_rewrite_permalinks() ) || win_is_writable($web_config_file) ) {
+		if ( iis7_supports_permalinks() ) {
+			$rule = $wp_rewrite->iis7_url_rewrite_rules(false, '', '');
+			if ( ! empty($rule) ) {
+				return iis7_add_rewrite_rule($web_config_file, $rule);
+			} else {
+				return iis7_delete_rewrite_rule($web_config_file);
+			}
 		}
 	}
 	return false;
@@ -172,7 +171,7 @@ function iis7_save_url_rewrite_rules(){
 /**
  * {@internal Missing Short Description}}
  *
- * @since 1.5.0
+ * @since unknown
  *
  * @param unknown_type $file
  */
@@ -194,7 +193,7 @@ function update_recently_edited( $file ) {
 /**
  * If siteurl or home changed, flush rewrite rules.
  *
- * @since 2.1.0
+ * @since unknown
  *
  * @param unknown_type $old_value
  * @param unknown_type $value
@@ -213,19 +212,20 @@ add_action( 'update_option_home', 'update_home_siteurl', 10, 2 );
 add_action( 'update_option_siteurl', 'update_home_siteurl', 10, 2 );
 
 /**
- * Shorten an URL, to be used as link text
+ * {@internal Missing Short Description}}
  *
- * @since 1.2.1
+ * @since unknown
  *
- * @param string $url
- * @return string
+ * @param unknown_type $url
+ * @return unknown
  */
 function url_shorten( $url ) {
 	$short_url = str_replace( 'http://', '', stripslashes( $url ));
 	$short_url = str_replace( 'www.', '', $short_url );
-	$short_url = untrailingslashit( $short_url );
+	if ('/' == substr( $short_url, -1 ))
+		$short_url = substr( $short_url, 0, -1 );
 	if ( strlen( $short_url ) > 35 )
-		$short_url = substr( $short_url, 0, 32 ) . '...';
+		$short_url = substr( $short_url, 0, 32 ).'...';
 	return $short_url;
 }
 
@@ -236,7 +236,7 @@ function url_shorten( $url ) {
  * in the $vars array to the value of $_POST[$var] or $_GET[$var] or ''
  * if neither is defined.
  *
- * @since 2.0.0
+ * @since unknown
  *
  * @param array $vars An array of globals to reset.
  */
@@ -259,7 +259,7 @@ function wp_reset_vars( $vars ) {
 /**
  * {@internal Missing Short Description}}
  *
- * @since 2.1.0
+ * @since unknown
  *
  * @param unknown_type $message
  */
@@ -343,18 +343,12 @@ function set_screen_options() {
 
 		switch ( $map_option ) {
 			case 'edit_per_page':
-			case 'users_per_page':
+			case 'ms_sites_per_page':
+			case 'ms_users_per_page':
 			case 'edit_comments_per_page':
 			case 'upload_per_page':
 			case 'edit_tags_per_page':
 			case 'plugins_per_page':
-			// Network admin
-			case 'sites_network_per_page':
-			case 'users_network_per_page':
-			case 'site_users_network_per_page':
-			case 'plugins_network_per_page':
-			case 'themes_network_per_page':
-			case 'site_themes_network_per_page':
 				$value = (int) $value;
 				if ( $value < 1 || $value > 999 )
 					return;
@@ -367,9 +361,45 @@ function set_screen_options() {
 		}
 
 		update_user_meta($user->ID, $option, $value);
-		wp_safe_redirect( remove_query_arg( array('pagenum', 'apage', 'paged'), wp_get_referer() ) );
+		wp_redirect( remove_query_arg( array('pagenum', 'apage', 'paged'), wp_get_referer() ) );
 		exit;
 	}
+}
+
+function wp_menu_unfold() {
+	if ( isset($_GET['unfoldmenu']) ) {
+		delete_user_setting('mfold');
+		wp_redirect( remove_query_arg( 'unfoldmenu', stripslashes($_SERVER['REQUEST_URI']) ) );
+	 	exit;
+	}
+}
+
+/**
+ * Check if IIS 7 supports pretty permalinks
+ *
+ * @since 2.8.0
+ *
+ * @return bool
+ */
+function iis7_supports_permalinks() {
+	global $is_iis7;
+
+	$supports_permalinks = false;
+	if ( $is_iis7 ) {
+		/* First we check if the DOMDocument class exists. If it does not exist,
+		 * which is the case for PHP 4.X, then we cannot easily update the xml configuration file,
+		 * hence we just bail out and tell user that pretty permalinks cannot be used.
+		 * This is not a big issue because PHP 4.X is going to be depricated and for IIS it
+		 * is recommended to use PHP 5.X NTS.
+		 * Next we check if the URL Rewrite Module 1.1 is loaded and enabled for the web site. When
+		 * URL Rewrite 1.1 is loaded it always sets a server variable called 'IIS_UrlRewriteModule'.
+		 * Lastly we make sure that PHP is running via FastCGI. This is important because if it runs
+		 * via ISAPI then pretty permalinks will not work.
+		 */
+		$supports_permalinks = class_exists('DOMDocument') && isset($_SERVER['IIS_UrlRewriteModule']) && ( php_sapi_name() == 'cgi-fcgi' );
+	}
+
+	return apply_filters('iis7_supports_permalinks', $supports_permalinks);
 }
 
 /**
@@ -531,29 +561,29 @@ function saveDomDocument($doc, $filename) {
  *
  * @since 2.8.0
  *
- * @param string $path
+ * @param object $path
  * @return bool
  */
-function win_is_writable( $path ) {
+function win_is_writable($path) {
 	/* will work in despite of Windows ACLs bug
 	 * NOTE: use a trailing slash for folders!!!
 	 * see http://bugs.php.net/bug.php?id=27609
 	 * see http://bugs.php.net/bug.php?id=30931
 	 */
 
-	if ( $path[strlen( $path ) - 1] == '/' ) // recursively return a temporary file path
-		return win_is_writable( $path . uniqid( mt_rand() ) . '.tmp');
-	else if ( is_dir( $path ) )
-		return win_is_writable( $path . '/' . uniqid( mt_rand() ) . '.tmp' );
-	// check tmp file for read/write capabilities
-	$should_delete_tmp_file = !file_exists( $path );
-	$f = @fopen( $path, 'a' );
-	if ( $f === false )
-		return false;
-	fclose( $f );
-	if ( $should_delete_tmp_file )
-		unlink( $path );
-	return true;
+    if ( $path{strlen($path)-1} == '/' ) // recursively return a temporary file path
+        return win_is_writable($path . uniqid(mt_rand()) . '.tmp');
+    else if ( is_dir($path) )
+        return win_is_writable($path . '/' . uniqid(mt_rand()) . '.tmp');
+    // check tmp file for read/write capabilities
+    $rm = file_exists($path);
+    $f = @fopen($path, 'a');
+    if ($f===false)
+        return false;
+    fclose($f);
+    if ( ! $rm )
+        unlink($path);
+    return true;
 }
 
 /**
@@ -584,12 +614,4 @@ foreach ( $_wp_admin_css_colors as $color => $color_info ): ?>
 </fieldset>
 <?php
 }
-
-function _ipad_meta() {
-	if ( strpos($_SERVER['HTTP_USER_AGENT'], 'iPad') !== false ) { ?>
-		<meta name="viewport" id="ipad-viewportmeta" content="width=device-width, initial-scale=1">
-	<?php
-	}
-}
-add_action('admin_head', '_ipad_meta');
-
+?>

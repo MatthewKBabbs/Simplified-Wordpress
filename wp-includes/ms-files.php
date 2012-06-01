@@ -23,22 +23,22 @@ if ( $current_blog->archived == '1' || $current_blog->spam == '1' || $current_bl
 	die( '404 &#8212; File not found.' );
 }
 
-$file = rtrim( BLOGUPLOADDIR, '/' ) . '/' . str_replace( '..', '', $_GET[ 'file' ] );
+$file = BLOGUPLOADDIR . str_replace( '..', '', $_GET[ 'file' ] );
 if ( !is_file( $file ) ) {
 	status_header( 404 );
 	die( '404 &#8212; File not found.' );
 }
 
-$mime = wp_check_filetype( $file );
+$mime = wp_check_filetype( $_SERVER[ 'REQUEST_URI' ] );
 if( false === $mime[ 'type' ] && function_exists( 'mime_content_type' ) )
 	$mime[ 'type' ] = mime_content_type( $file );
 
 if( $mime[ 'type' ] )
 	$mimetype = $mime[ 'type' ];
 else
-	$mimetype = 'image/' . substr( $file, strrpos( $file, '.' ) + 1 );
+	$mimetype = 'image/' . substr( $_SERVER[ 'REQUEST_URI' ], strrpos( $_SERVER[ 'REQUEST_URI' ], '.' ) + 1 );
 
-header( 'Content-Type: ' . $mimetype ); // always send this
+header( 'Content-type: ' . $mimetype ); // always send this
 if ( false === strpos( $_SERVER['SERVER_SOFTWARE'], 'Microsoft-IIS' ) )
 	header( 'Content-Length: ' . filesize( $file ) );
 

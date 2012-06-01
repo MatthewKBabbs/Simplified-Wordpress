@@ -205,7 +205,7 @@ endif;
 
 <br class="clear" />
 
-<h3><?php echo $title; ?></h3>
+<h2><?php echo $title; ?></h2>
 
 <?php
 
